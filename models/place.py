@@ -5,12 +5,9 @@ Place Class from Models Module
 import os
 from models.base_model import BaseModel, Base
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, Float, ForeignKey,\
-    MetaData, Table, ForeignKey
-from sqlalchemy.orm import backref
-import models
-storage_type = os.environ.get('HBNB_TYPE_STORAGE')
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Table
 
+storage_type = os.environ.get('HBNB_TYPE_STORAGE')
 
 if os.getenv("HBNB_TYPE_STORAGE") == "db":
     place_amenity = Table('place_amenity', Base.metadata,
@@ -37,6 +34,7 @@ class Place(BaseModel, Base):
     latitude = Column(Float)
     longitude = Column(Float)
 
+    if storage_type == "db":
         amenities = relationship('Amenity', secondary="place_amenity",
                                  viewonly=False)
         reviews = relationship('Review', backref='place', cascade='delete')
@@ -57,20 +55,18 @@ class Place(BaseModel, Base):
         @property
         def amenities(self):
             """
-            ammenities getter
-            :return: list of amenitites
+            Amenities getter
+            :return: list of amenities
             """
             amenity_objs = []
-
             for a_id in self.amenity_ids:
                 amenity_objs.append(models.storage.get("Amenity", str(a_id)))
-
             return amenity_objs
 
         @amenities.setter
         def amenities(self, amenity):
             """
-            ammenities setter
+            Amenities setter
             :return:
             """
             self.amenity_ids.append(amenity.id)
@@ -78,14 +74,12 @@ class Place(BaseModel, Base):
         @property
         def reviews(self):
             """
-            reviews getter
+            Reviews getter
             :return: list of reviews
             """
             all_reviews = models.storage.all("Review")
             place_reviews = []
-
             for review in all_reviews.values():
                 if review.place_id == self.id:
                     place_reviews.append(review)
-
             return place_reviews
