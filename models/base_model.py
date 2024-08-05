@@ -23,7 +23,6 @@ else:
     class Base:
         pass
 
-
 class BaseModel:
     """
         attributes and functions for BaseModel class
@@ -31,18 +30,18 @@ class BaseModel:
 
     if storage_type == 'db':
         id = Column(String(60), nullable=False, primary_key=True)
-        created_at = Column(DateTime, nullable=False,
-                            default=datetime.utcnow())
-        updated_at = Column(DateTime, nullable=False,
-                            default=datetime.utcnow())
+        created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+        updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     def __init__(self, *args, **kwargs):
         """instantiation of new BaseModel Class"""
         self.id = str(uuid4())
-        self.created_at = datetime.now()
+        self.created_at = datetime.utcnow()
+        self.updated_at = datetime.utcnow()
         if kwargs:
             for key, value in kwargs.items():
-                setattr(self, key, value)
+                if key != "__class__":
+                    setattr(self, key, value)
 
     def __is_serializable(self, obj_v):
         """
@@ -64,8 +63,7 @@ class BaseModel:
 
     def save(self):
         """updates attribute updated_at to current time"""
-        if storage_type != 'db':
-            self.updated_at = datetime.now()
+        self.updated_at = datetime.utcnow()
         models.storage.new(self)
         models.storage.save()
 
@@ -93,4 +91,4 @@ class BaseModel:
         """
             deletes current instance from storage
         """
-        self.delete()
+        models.storage.delete(self)
