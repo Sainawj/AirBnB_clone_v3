@@ -4,21 +4,16 @@ Place Class from Models Module
 """
 import os
 from models.base_model import BaseModel, Base
-from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Table
+from sqlalchemy.orm import relationship
+import models
 
 storage_type = os.environ.get('HBNB_TYPE_STORAGE')
 
 if os.getenv("HBNB_TYPE_STORAGE") == "db":
     place_amenity = Table('place_amenity', Base.metadata,
-                          Column('place_id',
-                                 String(60),
-                                 ForeignKey('places.id')),
-                          Column('amenity_id',
-                                 String(60),
-                                 ForeignKey('amenities.id',
-                                            ondelete="CASCADE")))
-
+                          Column('place_id', String(60), ForeignKey('places.id')),
+                          Column('amenity_id', String(60), ForeignKey('amenities.id', ondelete="CASCADE")))
 
 class Place(BaseModel, Base):
     """ A place to stay """
@@ -35,8 +30,7 @@ class Place(BaseModel, Base):
     longitude = Column(Float)
 
     if storage_type == "db":
-        amenities = relationship('Amenity', secondary="place_amenity",
-                                 viewonly=False)
+        amenities = relationship('Amenity', secondary="place_amenity", viewonly=False)
         reviews = relationship('Review', backref='place', cascade='delete')
     else:
         city_id = ''
