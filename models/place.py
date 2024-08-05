@@ -31,6 +31,8 @@ place_amenity = Table(
 class Place(BaseModel, Base):
     """A place to stay."""
     __tablename__ = 'places'
+    __table_args__ = {'extend_existing': True}  # Add this line
+
     city_id = Column(String(60), ForeignKey('cities.id'), nullable=False) if os.getenv('HBNB_TYPE_STORAGE') == 'db' else ''
     user_id = Column(String(60), ForeignKey('users.id'), nullable=False) if os.getenv('HBNB_TYPE_STORAGE') == 'db' else ''
     name = Column(String(128), nullable=False) if os.getenv('HBNB_TYPE_STORAGE') == 'db' else ''
@@ -42,11 +44,13 @@ class Place(BaseModel, Base):
     latitude = Column(Float, nullable=True) if os.getenv('HBNB_TYPE_STORAGE') == 'db' else 0.0
     longitude = Column(Float, nullable=True) if os.getenv('HBNB_TYPE_STORAGE') == 'db' else 0.0
     amenity_ids = []
+
     reviews = relationship(
         'Review',
         cascade="all, delete, delete-orphan",
         backref='place'
     ) if os.getenv('HBNB_TYPE_STORAGE') == 'db' else None
+
     if os.getenv('HBNB_TYPE_STORAGE') == 'db':
         amenities = relationship(
             'Amenity',
@@ -68,7 +72,7 @@ class Place(BaseModel, Base):
         @amenities.setter
         def amenities(self, value):
             """Adds an amenity to this Place."""
-            if type(value) is Amenity:
+            if isinstance(value, Amenity):
                 if value.id not in self.amenity_ids:
                     self.amenity_ids.append(value.id)
 
@@ -81,4 +85,3 @@ class Place(BaseModel, Base):
                 if value.place_id == self.id:
                     reviews_of_place.append(value)
             return reviews_of_place
-
